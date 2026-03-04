@@ -1,0 +1,27 @@
+{
+  "name": "waf-xml-vuln-scanner",
+  "version": "1.0.0",
+  "description": "A self-contained Node.js CLI tool that scans XML files for vulnerabilities that would be blocked by Azure Front Door's WAF (OWASP CRS-based rules). Reports the specific line number and reason for each failure.",
+  "main": "scanner.js",
+  "bin": {
+    "waf-xml-scan": "./scanner.js"
+  },
+  "scripts": {
+    "start": "node scanner.js",
+    "test": "node test/scanner.test.js"
+  },
+  "keywords": [
+    "waf",
+    "xml",
+    "security",
+    "azure",
+    "owasp",
+    "scanner",
+    "vulnerability"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
